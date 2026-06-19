@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded',()=>{
-  // ---- 3D Background with Three.js ----
+  // ---- 3D Background ----
   const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000),renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setSize(window.innerWidth,window.innerHeight);renderer.setPixelRatio(window.devicePixelRatio);document.body.prepend(renderer.domElement);
   const geo=new THREE.BufferGeometry(),count=1500,pos=new Float32Array(count*3),col=new Float32Array(count*3);for(let i=0;i<count*3;i+=3){pos[i]=(Math.random()-.5)*80;pos[i+1]=(Math.random()-.5)*50;pos[i+2]=(Math.random()-.5)*40-20;const c=new THREE.Color().setHSL(.7+Math.random()*.2,.9,.5);col[i]=c.r;col[i+1]=c.g;col[i+2]=c.b}geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));const mat=new THREE.PointsMaterial({size:.2,vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false});const particles=new THREE.Points(geo,mat);scene.add(particles);const rings=[];for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(4+i*2.5,.08,16,60),new THREE.MeshBasicMaterial({color:0x7c4dff,transparent:true,opacity:.08,wireframe:true}));ring.position.z=-10-i*5;scene.add(ring);rings.push(ring)}cam.position.z=25;
   const clock=new THREE.Clock();
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const btns=document.querySelectorAll('nav button'),sections=document.querySelectorAll('section');
   btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(x=>x.classList.remove('active'));b.classList.add('active');sections.forEach(s=>s.classList.remove('active'));document.getElementById(b.dataset.tab).classList.add('active')}));
 
-  // ---- Audio Engine (simplified) ----
+  // ---- Audio Engine ----
   let audioCtx=null,source=null,gain=null,analyser=null,buffer=null,playing=false,paused=false,startTime=0,pausedAt=0;
   function initAudio(){if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();gain=audioCtx.createGain();analyser=audioCtx.createAnalyser();analyser.fftSize=2048;gain.connect(analyser);analyser.connect(audioCtx.destination);gain.gain.value=.8}}
   async function loadAudio(url){initAudio();const resp=await fetch(url),ab=await resp.arrayBuffer();buffer=await audioCtx.decodeAudioData(ab);return buffer}
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   // ---- Upload (drag/drop) ----
   document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('drop',e=>{e.preventDefault();const file=e.dataTransfer.files[0];if(file)uploadFile(file)});
   function uploadFile(file){const fd=new FormData();fd.append('audio',file);fetch('/api/upload',{method:'POST',body:fd}).then(r=>r.json()).then(data=>{if(data.success){currentFile=data.filename;processedFile=null;alert('Uploaded!')}})}
-  // also support click upload – we add a hidden input
   const uploadInput=document.createElement('input');uploadInput.type='file';uploadInput.accept='audio/*';uploadInput.style.display='none';document.body.appendChild(uploadInput);uploadInput.addEventListener('change',()=>{if(uploadInput.files[0])uploadFile(uploadInput.files[0])});
   document.querySelector('#studio h2').addEventListener('click',()=>uploadInput.click());
 
